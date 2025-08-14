@@ -1,0 +1,124 @@
+{
+  "project_info": {
+    "project_number": "488591805395",
+    "project_id": "ahmedia-ead52",
+    "storage_bucket": "ahmedia-ead52.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488591805395:android:a57891963e8f55d722fd26",
+        "android_client_info": {
+          "package_name": "com.ahmedia.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "488591805395-omgtbdme2slcuk81828d2kkviansiktf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ahmedia.delivery",
+            "certificate_hash": "cbc303fdda275cc2685f745c608b313a2c5673a5"
+          }
+        },
+        {
+          "client_id": "488591805395-2led503tk8r3i01p1s5focqntb2rkcvt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2Ds-MaY7ao12dmkpXpDmoyAV4Df6ZJac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "488591805395-2led503tk8r3i01p1s5focqntb2rkcvt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "488591805395-5c9rvmh42qgcujulhspf06kcbgfcje7g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ahmedia.mobile",
+                "app_store_id": "6474295678"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488591805395:android:e54a0ad7f87bc58722fd26",
+        "android_client_info": {
+          "package_name": "com.ahmedia.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "488591805395-2ll1mlr8e0mr3pcrapo8k6epk26nf93t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ahmedia.mobile",
+            "certificate_hash": "60a4cb0b5329118bcc066886e39ec7be0edb8948"
+          }
+        },
+        {
+          "client_id": "488591805395-5f8d25ir6hji51e962kjdhu6b5tna97r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ahmedia.mobile",
+            "certificate_hash": "6021bc34cd1443046dff7b97be2af7ab29a2084b"
+          }
+        },
+        {
+          "client_id": "488591805395-lpd56g9r0fh2igbhr1tsirru6nk8q91t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ahmedia.mobile",
+            "certificate_hash": "12e78f831e170b1c29f19d2aa3f752d047bbed11"
+          }
+        },
+        {
+          "client_id": "488591805395-vehfe3a896rrubnlmrt9o8cqhdlhk5so.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ahmedia.mobile",
+            "certificate_hash": "7ef2b1633a88d5b99e3c4ab19beaa4c5b3dcaf69"
+          }
+        },
+        {
+          "client_id": "488591805395-2led503tk8r3i01p1s5focqntb2rkcvt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2Ds-MaY7ao12dmkpXpDmoyAV4Df6ZJac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "488591805395-2led503tk8r3i01p1s5focqntb2rkcvt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "488591805395-5c9rvmh42qgcujulhspf06kcbgfcje7g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ahmedia.mobile",
+                "app_store_id": "6474295678"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
