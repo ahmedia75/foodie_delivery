@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie_delivery/config/app_config.dart';
 import 'package:foodie_delivery/provider/notification_provider.dart';
+import 'package:foodie_delivery/provider/theme_provider.dart';
 import 'package:foodie_delivery/services/notification_service.dart';
 import 'package:foodie_delivery/view/notification_list_page.dart';
 import 'package:provider/provider.dart';
@@ -45,14 +46,34 @@ class MyApp extends StatelessWidget {
             return provider;
           },
         ),
+        ChangeNotifierProvider(
+          create: (context) => ThemeProvider(),
+        ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Delivery Agent App',
-        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-        home: const SplashScreen(),
-        routes: {
-          '/notifications': (context) => const NotificationListPage(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Ahmedia Delivery Agents',
+            theme: MyThemes.lightTheme,
+            darkTheme: MyThemes.darkTheme,
+            themeMode: themeProvider.themeMode,
+            // Override text scale factor to prevent device font size changes from affecting the app
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: const TextScaler.linear(
+                    1.0,
+                  ), // Force text scale to 1.0 (default size)
+                ),
+                child: child!,
+              );
+            },
+            home: const SplashScreen(),
+            routes: {
+              '/notifications': (context) => const NotificationListPage(),
+            },
+          );
         },
       ),
     );

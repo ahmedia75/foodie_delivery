@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ApiConfig {
-  static const String appName = "Ahmedia Delivery";
+  static const String appName = "Ahmedia Delivery Agents";
   // static const String baseUrl = "http://34.27.182.244:5000";
   // static const String baseUrl = "http://192.168.1.6:9000";
   // static const String baseUrl = "http://34.93.245.25:8080";
-  static const String baseUrl = "http://10.243.146.183:4075";
-  // static const String baseUrl = "http://192.168.29.118:4075";
+  // static const String baseUrl = "http://10.243.146.183:4075"; // local
+  static const String baseUrl = "http://35.244.0.34:4075"; // live
   static const String loginAPI = "/delivery-agents/login";
 
   static List<DropdownMenuItem<String>>? yearPicker = List.generate(

@@ -55,14 +55,14 @@ class NotificationBadge extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: backgroundColor ?? Colors.red,
+                  color: backgroundColor ?? AppColors.statusRejected,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 constraints: BoxConstraints(minWidth: size, minHeight: size),
                 child: Text(
                   unreadCount > 99 ? '99+' : unreadCount.toString(),
                   style: TextStyle(
-                    color: textColor ?? Colors.white,
+                    color: textColor ?? AppColors.primaryColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),

@@ -57,6 +57,73 @@ class LoginResponseModel {
   int get hashCode => message.hashCode ^ data.hashCode;
 }
 
+class DeliveryAgentResponseModel {
+  bool? success;
+  DeliveryAgentModel? data;
+  String? error;
+
+  DeliveryAgentResponseModel({this.success, this.data, this.error});
+
+  DeliveryAgentResponseModel copyWith({
+    bool? success,
+    DeliveryAgentModel? data,
+    String? error,
+  }) {
+    return DeliveryAgentResponseModel(
+      success: success ?? this.success,
+      data: data ?? this.data,
+      error: error ?? this.error,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    final result = <String, dynamic>{};
+
+    if (success != null) {
+      result.addAll({'success': success});
+    }
+    if (data != null) {
+      result.addAll({'data': data!.toMap()});
+    }
+    if (error != null) {
+      result.addAll({'error': error});
+    }
+
+    return result;
+  }
+
+  factory DeliveryAgentResponseModel.fromMap(Map<String, dynamic> map) {
+    return DeliveryAgentResponseModel(
+      success: map['success'] != null ? map['success'] as bool : null,
+      data:
+          map['data'] != null ? DeliveryAgentModel.fromMap(map['data']) : null,
+      error: map['error'] != null ? map['error'] as String : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory DeliveryAgentResponseModel.fromJson(String source) =>
+      DeliveryAgentResponseModel.fromMap(json.decode(source));
+
+  @override
+  String toString() =>
+      'DeliveryAgentResponseModel(success: $success, data: $data, error: $error)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is DeliveryAgentResponseModel &&
+        other.success == success &&
+        other.data == data &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode => success.hashCode ^ data.hashCode ^ error.hashCode;
+}
+
 class DeliveryAgentModel {
   String? id;
   String? name;
@@ -77,6 +144,8 @@ class DeliveryAgentModel {
   DateTime? updatedAt;
   String? token;
   String? deviceToken;
+  String? devicePlatform;
+  DateTime? lastDeliveryDate;
   DeliveryAgentModel({
     this.id,
     this.name,
@@ -97,6 +166,8 @@ class DeliveryAgentModel {
     this.updatedAt,
     this.token,
     this.deviceToken,
+    this.devicePlatform,
+    this.lastDeliveryDate,
   });
 
   DeliveryAgentModel copyWith({
@@ -119,6 +190,8 @@ class DeliveryAgentModel {
     DateTime? updatedAt,
     String? token,
     String? deviceToken,
+    String? devicePlatform,
+    DateTime? lastDeliveryDate,
   }) {
     return DeliveryAgentModel(
       id: id ?? this.id,
@@ -140,6 +213,8 @@ class DeliveryAgentModel {
       updatedAt: updatedAt ?? this.updatedAt,
       token: token ?? this.token,
       deviceToken: deviceToken ?? this.deviceToken,
+      devicePlatform: devicePlatform ?? this.devicePlatform,
+      lastDeliveryDate: lastDeliveryDate ?? this.lastDeliveryDate,
     );
   }
 
@@ -164,6 +239,8 @@ class DeliveryAgentModel {
       'updatedAt': updatedAt?.millisecondsSinceEpoch,
       'token': token,
       'deviceToken': deviceToken,
+      'devicePlatform': devicePlatform,
+      'lastDeliveryDate': lastDeliveryDate?.millisecondsSinceEpoch,
     };
   }
 
@@ -203,6 +280,12 @@ class DeliveryAgentModel {
       token: map['token'] != null ? map['token'] as String : null,
       deviceToken:
           map['deviceToken'] != null ? map['deviceToken'] as String : null,
+      devicePlatform: map['devicePlatform'] != null
+          ? map['devicePlatform'] as String
+          : null,
+      lastDeliveryDate: map['lastDeliveryDate'] != null
+          ? _parseDate(map['lastDeliveryDate'])
+          : null,
     );
   }
 
@@ -223,7 +306,7 @@ class DeliveryAgentModel {
 
   @override
   String toString() {
-    return 'DeliveryAgentModel(_id: $id, name: $name, phone: $phone, dateOfBirth: $dateOfBirth, address: $address, vehicleNumber: $vehicleNumber, vehicleModel: $vehicleModel, vehicleType: $vehicleType, licenseNumber: $licenseNumber, branchId: $branchId, isAvailable: $isAvailable, status: $status, totalDeliveries: $totalDeliveries, dailyDeliveries: $dailyDeliveries, proofDocuments: $proofDocuments, createdAt: $createdAt, updatedAt: $updatedAt, token: $token, deviceToken: $deviceToken)';
+    return 'DeliveryAgentModel(_id: $id, name: $name, phone: $phone, dateOfBirth: $dateOfBirth, address: $address, vehicleNumber: $vehicleNumber, vehicleModel: $vehicleModel, vehicleType: $vehicleType, licenseNumber: $licenseNumber, branchId: $branchId, isAvailable: $isAvailable, status: $status, totalDeliveries: $totalDeliveries, dailyDeliveries: $dailyDeliveries, proofDocuments: $proofDocuments, createdAt: $createdAt, updatedAt: $updatedAt, token: $token, deviceToken: $deviceToken, devicePlatform: $devicePlatform, lastDeliveryDate: $lastDeliveryDate)';
   }
 
   @override
@@ -248,7 +331,9 @@ class DeliveryAgentModel {
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.token == token &&
-        other.deviceToken == deviceToken;
+        other.deviceToken == deviceToken &&
+        other.devicePlatform == devicePlatform &&
+        other.lastDeliveryDate == lastDeliveryDate;
   }
 
   @override
@@ -271,7 +356,9 @@ class DeliveryAgentModel {
         createdAt.hashCode ^
         updatedAt.hashCode ^
         token.hashCode ^
-        deviceToken.hashCode;
+        deviceToken.hashCode ^
+        devicePlatform.hashCode ^
+        lastDeliveryDate.hashCode;
   }
 }
 
