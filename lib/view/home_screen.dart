@@ -20,6 +20,15 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   DateTime? _lastProfileFetch;
 
+  // Helper method to compare dates properly
+  bool _isSameDate(DateTime? date1, DateTime? date2) {
+    if (date1 == null && date2 == null) return true;
+    if (date1 == null || date2 == null) return false;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<LoginController>().user;
@@ -32,8 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
         user != null &&
         !orderController.isLoading &&
         (orderController.lastFetchedAgentId != user.id ||
-            orderController.lastFetchedDate != orderController.selectedDate)) {
-      Future.microtask(() => orderController.fetchOrders(user.id!));
+            !_isSameDate(orderController.lastFetchedDate,
+                orderController.selectedDate))) {
+      Future.microtask(() => orderController.fetchOrders(user.id!,
+          date: orderController.selectedDate));
     }
 
     // Fetch profile data when Profile tab is selected
@@ -110,20 +121,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isAvailable
-                        ? AppColors.statusAccepted.withOpacity(0.1)
-                        : AppColors.statusRejected.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                      color: isAvailable
-                          ? AppColors.statusAccepted
-                          : AppColors.statusRejected,
-                      width: 1.5,
-                    ),
-                  ),
+                  // padding:
+                  //     const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  // decoration: BoxDecoration(
+                  //   color: isAvailable
+                  //       ? AppColors.statusAccepted.withOpacity(0.1)
+                  //       : AppColors.statusRejected.withOpacity(0.1),
+                  //   borderRadius: BorderRadius.circular(30),
+                  //   border: Border.all(
+                  //     color: isAvailable
+                  //         ? AppColors.statusAccepted
+                  //         : AppColors.statusRejected,
+                  //     width: 1.5,
+                  //   ),
+                  // ),
                   child: Row(
                     children: [
                       Icon(
@@ -184,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           const Padding(
-            padding: EdgeInsets.only(right: 8, top: 4),
+            padding: EdgeInsets.only(right: 0, top: 0),
             child: NotificationBadge(
               backgroundColor: AppColors.offers,
             ),
@@ -479,7 +490,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildOrdersTab(OrderController orderController, user) {
     // Always default to today if no date is selected
     DateTime today = DateTime.now();
-    DateTime? selectedDate = orderController.selectedDate ?? today;
+    DateTime? selectedDate = orderController.selectedDate;
     return Column(
       children: [
         Padding(
@@ -498,7 +509,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppColors.secondaryColor,
                   ),
                   label: Text(
-                    '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                    selectedDate != null
+                        ? '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}'
+                        : 'All Orders',
                     style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppColors.secondaryColor),
@@ -506,12 +519,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () async {
                     final picked = await showDatePicker(
                       context: context,
-                      initialDate: selectedDate,
+                      initialDate: selectedDate ?? today,
                       firstDate: DateTime(2023, 1, 1),
                       lastDate: today, // Only allow today and past
                       selectableDayPredicate: (date) => !date.isAfter(today),
                     );
-                    if (picked != null && picked != selectedDate) {
+                    if (picked != null && !_isSameDate(picked, selectedDate)) {
                       await orderController.fetchOrders(
                         user.id!,
                         date: picked,
@@ -521,15 +534,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
-              if (orderController.selectedDate != null &&
-                  orderController.selectedDate != today)
+              if (orderController.selectedDate != null)
                 IconButton(
                   icon: const Icon(Icons.clear, color: Colors.red),
                   tooltip: 'Clear date filter',
                   onPressed: () async {
                     orderController.clearDateFilter();
                     await orderController.fetchOrders(user.id!,
-                        date: today, append: false);
+                        date: null,
+                        append: false); // Pass null to fetch all orders
                   },
                 ),
             ],

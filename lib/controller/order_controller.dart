@@ -81,6 +81,7 @@ class OrderController extends ChangeNotifier {
 
   void clearDateFilter() {
     selectedDate = null;
+    lastFetchedDate = null; // Reset the last fetched date to ensure fresh fetch
     notifyListeners();
   }
 }

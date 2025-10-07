@@ -272,15 +272,15 @@ class OrderDetailsScreen extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.statusWaiting.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.statusWaiting.withOpacity(0.3)),
-          ),
+          // decoration: BoxDecoration(
+          //   color: AppColors.backgroundlightColor,
+          //   borderRadius: BorderRadius.circular(8),
+          //   border: Border.all(color: AppColors.statusWaiting.withOpacity(0.3)),
+          // ),
           child: Text(
             order.specialInstructions,
             style: const TextStyle(
-              color: AppColors.statusWaiting,
+              color: AppColors.black,
               fontWeight: FontWeight.w500,
               fontSize: 14,
             ),

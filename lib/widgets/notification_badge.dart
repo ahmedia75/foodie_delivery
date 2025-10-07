@@ -31,7 +31,7 @@ class NotificationBadge extends StatelessWidget {
                 },
             icon: const Icon(
               Icons.notifications_outlined,
-              color: AppColors.textGray,
+              color: AppColors.black,
             ),
           );
         }
