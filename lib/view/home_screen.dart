@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:foodie_delivery/constants/app_colors.dart';
 import 'package:foodie_delivery/widgets/notification_badge.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  DateTime? _lastProfileFetch;
+
+  // Helper method to compare dates properly
+  bool _isSameDate(DateTime? date1, DateTime? date2) {
+    if (date1 == null && date2 == null) return true;
+    if (date1 == null || date2 == null) return false;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,40 +41,55 @@ class _HomeScreenState extends State<HomeScreen> {
         user != null &&
         !orderController.isLoading &&
         (orderController.lastFetchedAgentId != user.id ||
-            orderController.lastFetchedDate != orderController.selectedDate)) {
-      Future.microtask(() => orderController.fetchOrders(user.id!));
+            !_isSameDate(orderController.lastFetchedDate,
+                orderController.selectedDate))) {
+      Future.microtask(() => orderController.fetchOrders(user.id!,
+          date: orderController.selectedDate));
+    }
+
+    // Fetch profile data when Profile tab is selected
+    if (_currentIndex == 1 &&
+        user != null &&
+        !controller.isLoading &&
+        (_lastProfileFetch == null ||
+            DateTime.now().difference(_lastProfileFetch!).inMinutes > 1)) {
+      Future.microtask(() async {
+        await controller.fetchLatestProfileData();
+        _lastProfileFetch = DateTime.now();
+      });
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.backgrounddarklightColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
+        foregroundColor: AppColors.secondaryColor,
         title: Row(
           children: [
-            const Text(
-              'Ahmedia',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
+            // const Text(
+            //   'Ahmedia',
+            //   style: TextStyle(
+            //       fontSize: 14,
+            //       fontWeight: FontWeight.bold,
+            //       color: AppColors.secondaryColor),
+            // ),
+            // const SizedBox(width: 2),
+
+            SvgPicture.asset(
+              'assets/logo/Ahmedia_Delivery_Logo.svg',
+              height: 28,
+              errorBuilder: (_, __, ___) => const Icon(Icons.delivery_dining,
+                  color: AppColors.secondaryColor),
             ),
-            const SizedBox(width: 2),
-            Image.asset(
-              'assets/delivery.png',
-              height: 32,
-              width: 32,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.delivery_dining, color: Colors.brown),
-            ),
-            const SizedBox(width: 2),
-            const Text(
-              'Agent',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
-            ),
+            // const SizedBox(width: 2),
+            // const Text(
+            //   'Agent',
+            //   style: TextStyle(
+            //       fontSize: 14,
+            //       fontWeight: FontWeight.bold,
+            //       color: AppColors.secondaryColor),
+            // ),
           ],
         ),
         actions: [
@@ -85,54 +111,60 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : 'Failed to update availability',
                         ),
                         backgroundColor: result == true
-                            ? Colors.green
+                            ? AppColors.statusAccepted
                             : result == false
-                                ? Colors.red
-                                : Colors.orange,
+                                ? AppColors.statusRejected
+                                : AppColors.statusWaiting,
                       ),
                     );
                   }
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isAvailable
-                        ? Colors.green.shade100
-                        : Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                      color: isAvailable ? Colors.green : Colors.red,
-                      width: 1.5,
-                    ),
-                  ),
+                  // padding:
+                  //     const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  // decoration: BoxDecoration(
+                  //   color: isAvailable
+                  //       ? AppColors.statusAccepted.withOpacity(0.1)
+                  //       : AppColors.statusRejected.withOpacity(0.1),
+                  //   borderRadius: BorderRadius.circular(30),
+                  //   border: Border.all(
+                  //     color: isAvailable
+                  //         ? AppColors.statusAccepted
+                  //         : AppColors.statusRejected,
+                  //     width: 1.5,
+                  //   ),
+                  // ),
                   child: Row(
                     children: [
                       Icon(
                         isAvailable ? Icons.check_circle : Icons.cancel,
-                        color: isAvailable ? Colors.green : Colors.red,
+                        color: isAvailable
+                            ? AppColors.statusAccepted
+                            : AppColors.statusRejected,
                         size: 20,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 3),
                       Text(
                         isAvailable ? 'Active' : 'Inactive',
                         style: TextStyle(
                           color: isAvailable
-                              ? Colors.green.shade800
-                              : Colors.red.shade800,
+                              ? AppColors.statusAccepted
+                              : AppColors.statusRejected,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 3),
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         width: 36,
                         height: 20,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: isAvailable ? Colors.green : Colors.red,
+                          color: isAvailable
+                              ? AppColors.statusAccepted
+                              : AppColors.statusRejected,
                         ),
                         child: Align(
                           alignment: isAvailable
@@ -144,10 +176,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             height: 16,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white,
+                              color: AppColors.primaryColor,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color:
+                                      AppColors.secondaryColor.withOpacity(0.1),
                                   blurRadius: 2,
                                   offset: const Offset(0, 1),
                                 ),
@@ -162,13 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           const Padding(
-            padding: EdgeInsets.only(right: 8, top: 4),
+            padding: EdgeInsets.only(right: 0, top: 0),
             child: NotificationBadge(
               backgroundColor: AppColors.offers,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black87),
+            icon: const Icon(Icons.logout, color: AppColors.secondaryColor),
             onPressed: () async {
               await context.read<LoginController>().logout();
               if (context.mounted) {
@@ -181,122 +214,194 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _currentIndex == 1
-          ? SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Profile Card
-                  Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    elevation: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 24, horizontal: 16),
+          ? controller.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : controller.error != null
+                  ? Center(
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircleAvatar(
-                            radius: 36,
-                            backgroundColor: Colors.blue.shade100,
-                            child: Text(
-                              (user?.name?.isNotEmpty == true
-                                  ? user!.name![0].toUpperCase()
-                                  : '?'),
-                              style: const TextStyle(
-                                  fontSize: 32,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
+                          const Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: AppColors.statusRejected,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Error loading profile',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.statusRejected,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           Text(
-                            user?.name ?? 'N/A',
+                            controller.error!,
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.bold),
+                              color: AppColors.statusRejected,
+                            ),
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isAvailable ? Icons.check_circle : Icons.cancel,
-                                color: isAvailable ? Colors.green : Colors.red,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                isAvailable ? 'Active' : 'Inactive',
-                                style: TextStyle(
-                                  color:
-                                      isAvailable ? Colors.green : Colors.red,
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () async {
+                              await controller.fetchLatestProfileData();
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Profile Card
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.secondaryColor
+                                      .withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
                                 ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 0, horizontal: 0),
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 36,
+                                    backgroundColor: AppColors.secondaryColor,
+                                    child: Text(
+                                      (user?.name?.isNotEmpty == true
+                                          ? user!.name![0].toUpperCase()
+                                          : '?'),
+                                      style: const TextStyle(
+                                          fontSize: 32,
+                                          color: AppColors.primaryColor,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    user?.name ?? 'N/A',
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        isAvailable
+                                            ? Icons.check_circle
+                                            : Icons.cancel,
+                                        color: isAvailable
+                                            ? AppColors.statusAccepted
+                                            : AppColors.statusRejected,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        isAvailable ? 'Active' : 'Inactive',
+                                        style: TextStyle(
+                                          color: isAvailable
+                                              ? AppColors.statusAccepted
+                                              : AppColors.statusRejected,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Profile Info
+                          _sectionCard(
+                            title: 'Profile',
+                            icon: Icons.person,
+                            children: [
+                              _infoTile(
+                                  Icons.phone, 'Phone', user?.phone ?? 'N/A'),
+                              _infoTile(Icons.home, 'Address',
+                                  user?.address ?? 'N/A'),
+                              _infoTile(Icons.location_city, 'Branch',
+                                  user?.branchId?.name ?? 'N/A'),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _sectionCard(
+                            title: 'Vehicle',
+                            icon: Icons.directions_bike,
+                            children: [
+                              _infoTile(
+                                  Icons.confirmation_number,
+                                  'Vehicle Number',
+                                  user?.vehicleNumber ?? 'N/A'),
+                              _infoTile(Icons.directions_car, 'Vehicle Model',
+                                  user?.vehicleModel ?? 'N/A'),
+                              _infoTile(Icons.category, 'Vehicle Type',
+                                  user?.vehicleType ?? 'N/A'),
+                              _infoTile(Icons.badge, 'License Number',
+                                  user?.licenseNumber ?? 'N/A'),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _sectionCard(
+                            title: 'Statistics',
+                            icon: Icons.bar_chart,
+                            children: [
+                              _infoTile(
+                                  Icons.assignment_turned_in,
+                                  'Total Deliveries',
+                                  user?.totalDeliveries?.toString() ?? '0'),
+                              // _infoTile(Icons.today, 'Daily Deliveries',
+                              //     user?.dailyDeliveries?.toString() ?? '0'),
+                              _infoTile(
+                                Icons.toggle_on,
+                                'Status',
+                                isAvailable ? 'Available' : 'Not Available',
+                                valueColor: isAvailable
+                                    ? AppColors.statusAccepted
+                                    : AppColors.statusRejected,
                               ),
                             ],
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Profile Info
-                  _sectionCard(
-                    title: 'Profile',
-                    icon: Icons.person,
-                    children: [
-                      _infoTile(Icons.phone, 'Phone', user?.phone ?? 'N/A'),
-                      _infoTile(Icons.home, 'Address', user?.address ?? 'N/A'),
-                      _infoTile(Icons.location_city, 'Branch',
-                          user?.branchId?.name ?? 'N/A'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _sectionCard(
-                    title: 'Vehicle',
-                    icon: Icons.directions_bike,
-                    children: [
-                      _infoTile(Icons.confirmation_number, 'Vehicle Number',
-                          user?.vehicleNumber ?? 'N/A'),
-                      _infoTile(Icons.directions_car, 'Vehicle Model',
-                          user?.vehicleModel ?? 'N/A'),
-                      _infoTile(Icons.category, 'Vehicle Type',
-                          user?.vehicleType ?? 'N/A'),
-                      _infoTile(Icons.badge, 'License Number',
-                          user?.licenseNumber ?? 'N/A'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _sectionCard(
-                    title: 'Statistics',
-                    icon: Icons.bar_chart,
-                    children: [
-                      _infoTile(Icons.assignment_turned_in, 'Total Deliveries',
-                          user?.totalDeliveries?.toString() ?? '0'),
-                      _infoTile(Icons.today, 'Daily Deliveries',
-                          user?.dailyDeliveries?.toString() ?? '0'),
-                      _infoTile(
-                        Icons.toggle_on,
-                        'Status',
-                        isAvailable ? 'Available' : 'Not Available',
-                        valueColor: isAvailable ? Colors.green : Colors.red,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            )
+                    )
           : _buildOrdersTab(orderController, user),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() {
             _currentIndex = index;
           });
+
+          // Fetch profile data when profile tab is tapped
+          if (index == 1 && user != null && !controller.isLoading) {
+            await controller.fetchLatestProfileData();
+            _lastProfileFetch = DateTime.now();
+          }
         },
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.secondaryColor,
+        unselectedItemColor: AppColors.textGray,
+        backgroundColor: AppColors.primaryColor,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -315,17 +420,28 @@ class _HomeScreenState extends State<HomeScreen> {
       {required String title,
       required IconData icon,
       required List<Widget> children}) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 2,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.blue, size: 22),
+                Icon(icon, color: AppColors.secondaryColor, size: 22),
                 const SizedBox(width: 8),
                 Text(
                   title,
@@ -348,14 +464,14 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blueGrey, size: 20),
+          Icon(icon, color: AppColors.textGray, size: 20),
           const SizedBox(width: 10),
           SizedBox(
             width: 110,
             child: Text(
               label,
               style: const TextStyle(
-                  fontWeight: FontWeight.w500, color: Colors.black87),
+                  fontWeight: FontWeight.w500, color: AppColors.secondaryColor),
             ),
           ),
           Expanded(
@@ -363,7 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
               value,
               style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: valueColor ?? Colors.black87),
+                  color: valueColor ?? AppColors.secondaryColor),
             ),
           ),
         ],
@@ -374,7 +490,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildOrdersTab(OrderController orderController, user) {
     // Always default to today if no date is selected
     DateTime today = DateTime.now();
-    DateTime? selectedDate = orderController.selectedDate ?? today;
+    DateTime? selectedDate = orderController.selectedDate;
     return Column(
       children: [
         Padding(
@@ -383,20 +499,32 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.calendar_today, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.secondaryColor,
+                    backgroundColor: AppColors.primaryColor,
+                  ),
+                  icon: const Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                    color: AppColors.secondaryColor,
+                  ),
                   label: Text(
-                    '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    selectedDate != null
+                        ? '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}'
+                        : 'All Orders',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.secondaryColor),
                   ),
                   onPressed: () async {
                     final picked = await showDatePicker(
                       context: context,
-                      initialDate: selectedDate,
+                      initialDate: selectedDate ?? today,
                       firstDate: DateTime(2023, 1, 1),
                       lastDate: today, // Only allow today and past
                       selectableDayPredicate: (date) => !date.isAfter(today),
                     );
-                    if (picked != null && picked != selectedDate) {
+                    if (picked != null && !_isSameDate(picked, selectedDate)) {
                       await orderController.fetchOrders(
                         user.id!,
                         date: picked,
@@ -406,15 +534,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
-              if (orderController.selectedDate != null &&
-                  orderController.selectedDate != today)
+              if (orderController.selectedDate != null)
                 IconButton(
                   icon: const Icon(Icons.clear, color: Colors.red),
                   tooltip: 'Clear date filter',
                   onPressed: () async {
                     orderController.clearDateFilter();
                     await orderController.fetchOrders(user.id!,
-                        date: today, append: false);
+                        date: null,
+                        append: false); // Pass null to fetch all orders
                   },
                 ),
             ],
@@ -432,9 +560,10 @@ class _HomeScreenState extends State<HomeScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (orderController.error != null) {
-      return Center(
-          child: Text(orderController.error!,
-              style: const TextStyle(color: Colors.red)));
+      return const Center(
+          // child: Text(orderController.error!,
+          child: Text('Error loading orders',
+              style: TextStyle(color: AppColors.statusRejected)));
     }
     if (orderController.orders.isEmpty) {
       return const Center(
@@ -481,7 +610,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Loading indicator at the bottom
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: AppColors.secondaryColor,
+                    )),
                   );
                 }
               },
@@ -494,11 +626,11 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 24,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.midtoneColor,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: AppColors.secondaryColor.withOpacity(0.08),
                     blurRadius: 8,
                   ),
                 ],
@@ -563,11 +695,11 @@ class _HomeScreenState extends State<HomeScreen> {
               minimumSize: const Size(36, 36),
               padding: EdgeInsets.zero,
               backgroundColor: i == orderController.currentPage
-                  ? Colors.blue
-                  : Colors.grey.shade200,
+                  ? AppColors.secondaryColor
+                  : AppColors.backgrounddarklightColor,
               foregroundColor: i == orderController.currentPage
-                  ? Colors.white
-                  : Colors.black87,
+                  ? AppColors.primaryColor
+                  : AppColors.secondaryColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               elevation: 0,
@@ -622,12 +754,23 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor = const Color(0xFFF5F5F5);
     }
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 2,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -660,7 +803,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.person, size: 18, color: Colors.blueGrey),
+                const Icon(Icons.person, size: 18, color: AppColors.textGray),
                 const SizedBox(width: 6),
                 Text(
                     order.customer.name?.isNotEmpty == true
@@ -669,53 +812,58 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(fontWeight: FontWeight.w500)),
                 const Spacer(),
                 Text('${order.items.length} item(s)',
-                    style: const TextStyle(color: Colors.black54)),
+                    style: const TextStyle(color: AppColors.textGray)),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.location_on, size: 18, color: Colors.blueGrey),
+                const Icon(Icons.location_on,
+                    size: 18, color: AppColors.textGray),
                 const SizedBox(width: 6),
                 Expanded(
                     child: Text(order.deliveryAddress.addressLine1,
-                        style: const TextStyle(color: Colors.black87))),
+                        style:
+                            const TextStyle(color: AppColors.secondaryColor))),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 const Icon(Icons.attach_money,
-                    size: 18, color: Colors.blueGrey),
+                    size: 18, color: AppColors.textGray),
                 const SizedBox(width: 6),
                 Text('₹${order.totalAmount.toStringAsFixed(2)}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 const Spacer(),
                 Text(order.paymentMethod,
-                    style: const TextStyle(color: Colors.black54)),
+                    style: const TextStyle(color: AppColors.textGray)),
               ],
             ),
             if (order.specialInstructions.isNotEmpty) ...[
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.notes, size: 18, color: Colors.orange),
+                  const Icon(Icons.notes,
+                      size: 18, color: AppColors.statusWaiting),
                   const SizedBox(width: 6),
                   Expanded(
                       child: Text(order.specialInstructions,
-                          style: const TextStyle(color: Colors.orange))),
+                          style:
+                              const TextStyle(color: AppColors.statusWaiting))),
                 ],
               ),
             ],
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: Colors.blueGrey),
+                const Icon(Icons.access_time,
+                    size: 16, color: AppColors.textGray),
                 const SizedBox(width: 4),
                 Text(
                     'Placed: ${order.createdAt.toLocal().toString().substring(0, 16)}',
-                    style:
-                        const TextStyle(fontSize: 12, color: Colors.black54)),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textGray)),
               ],
             ),
           ],

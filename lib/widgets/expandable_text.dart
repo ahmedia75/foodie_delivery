@@ -4,8 +4,12 @@ import 'package:foodie_delivery/constants/app_colors.dart';
 class ExpandableText extends StatefulWidget {
   final String text;
   final int trimLength;
-
-  const ExpandableText({super.key, required this.text, this.trimLength = 40});
+  final bool isRead;
+  const ExpandableText(
+      {super.key,
+      required this.text,
+      this.trimLength = 40,
+      required this.isRead});
 
   @override
   _ExpandableTextState createState() => _ExpandableTextState();
@@ -18,12 +22,15 @@ class _ExpandableTextState extends State<ExpandableText> {
   Widget build(BuildContext context) {
     final displayText = _isExpanded || widget.text.length <= widget.trimLength
         ? widget.text
-        : widget.text.substring(0, widget.trimLength) + '...';
+        : '${widget.text.substring(0, widget.trimLength)}...';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(displayText, style: const TextStyle(color: AppColors.primary)),
+        Text(displayText,
+            style: TextStyle(
+              color: widget.isRead ? AppColors.textGray : AppColors.black,
+            )),
         if (widget.text.length > widget.trimLength)
           GestureDetector(
             onTap: () {
@@ -33,8 +40,8 @@ class _ExpandableTextState extends State<ExpandableText> {
             },
             child: Text(
               _isExpanded ? 'Read less' : 'Read more',
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: _isExpanded ? AppColors.textGray : AppColors.black,
                 fontWeight: FontWeight.w600,
               ),
             ),

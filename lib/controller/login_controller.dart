@@ -136,4 +136,48 @@ class LoginController extends ChangeNotifier {
       return null;
     }
   }
+
+  Future<bool> fetchLatestProfileData() async {
+    if (_user == null || _user!.id == null) return false;
+
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final agentId = _user!.id!;
+      final endpoint = '/delivery-agents/$agentId';
+      final response = await _apiService.get(endpoint);
+
+      print("Profile fetch response: $response");
+
+      if (response['success'] == true && response['data'] != null) {
+        // Preserve the existing token when updating profile data
+        final currentToken = _user!.token;
+        _user = DeliveryAgentModel.fromMap(response['data']);
+
+        // Restore the token if it was lost during profile data update
+        if (_user!.token == null && currentToken != null) {
+          _user = _user!.copyWith(token: currentToken);
+        }
+
+        // DO NOT save profile data to cache - only update UI
+        // await _saveUserData(); // Removed this line
+        notifyListeners();
+        return true;
+      } else {
+        _error = response['error'] ?? 'Failed to fetch profile data';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      print("Profile fetch error: $e");
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

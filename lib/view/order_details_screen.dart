@@ -3,7 +3,9 @@ import '../model/delivery_agent_order_model.dart';
 import '../networking/api_service.dart';
 import '../controller/order_controller.dart';
 import '../controller/login_controller.dart';
+import '../constants/app_colors.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
   final DeliveryAgentOrder order;
@@ -12,14 +14,14 @@ class OrderDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.backgroundlightColor,
       appBar: AppBar(
         title: Text(
           'Order #${order.orderId}',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.secondaryColor,
         elevation: 0,
         centerTitle: true,
       ),
@@ -58,7 +60,7 @@ class OrderDetailsScreen extends StatelessWidget {
           if (order.specialInstructions.isNotEmpty) const SizedBox(height: 16),
 
           // Timeline Card
-          _buildTimelineCard(),
+          // _buildTimelineCard(),
           const SizedBox(height: 20),
         ],
       ),
@@ -130,11 +132,11 @@ class OrderDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Order Status',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: AppColors.textGray,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -156,7 +158,7 @@ class OrderDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildUpdateProofButton(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         icon: const Icon(Icons.upload_file, size: 20),
@@ -166,8 +168,8 @@ class OrderDetailsScreen extends StatelessWidget {
         ),
         onPressed: () => _showProofDialog(context),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue[600],
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.secondaryColor,
+          foregroundColor: AppColors.primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -186,17 +188,22 @@ class OrderDetailsScreen extends StatelessWidget {
         _buildSummaryRow('Order ID', '#${order.orderId}', isHighlighted: true),
         _buildSummaryRow('Payment Method', order.paymentMethod),
         _buildSummaryRow('Subtotal',
-            '₹${(order.totalAmount - order.deliveryCharge - order.gstCharge).toStringAsFixed(2)}'),
+            '₹${(order.totalAmount - order.deliveryCharge - order.gstCharge!).toStringAsFixed(2)}'),
         _buildSummaryRow(
             'Delivery Charge', '₹${order.deliveryCharge.toStringAsFixed(2)}'),
-        _buildSummaryRow('GST', '₹${order.gstCharge.toStringAsFixed(2)}'),
+        if ((order.gstCharge ?? 0) > 0)
+          _buildSummaryRow(
+              'GST Charge', '₹${order.gstCharge!.toStringAsFixed(2)}'),
+        if ((order.discountAmount ?? 0) > 0)
+          _buildSummaryRow('Reward Discount',
+              '- ₹${order.discountAmount!.toStringAsFixed(2)}'),
         const Divider(height: 24),
         _buildSummaryRow(
             'Total Amount', '₹${order.totalAmount.toStringAsFixed(2)}',
             isTotal: true),
         const SizedBox(height: 8),
-        _buildSummaryRow('Created', _formatDateTime(order.createdAt)),
-        _buildSummaryRow('Last Updated', _formatDateTime(order.updatedAt)),
+        // _buildSummaryRow('Created', _formatDateTime(order.createdAt)),
+        // _buildSummaryRow('Last Updated', _formatDateTime(order.updatedAt)),
       ],
     );
   }
@@ -207,16 +214,26 @@ class OrderDetailsScreen extends StatelessWidget {
       icon: Icons.person,
       children: [
         _buildSummaryRow(
-            'Name',
-            order.customer.name?.isNotEmpty == true
-                ? order.customer.name!
-                : 'Not provided'),
-        _buildSummaryRow('Phone', order.customer.number),
-        _buildSummaryRow(
-            'Email',
-            order.customer.email.isNotEmpty
-                ? order.customer.email
-                : 'Not provided'),
+          'Name',
+          order.deliveryAddress.customerName.isNotEmpty
+              ? order.deliveryAddress.customerName
+              : order.customer.name!,
+
+          // order.customer.name?.isNotEmpty == true
+          //     ? order.customer.name!
+          //     : 'Not provided'
+        ),
+        _buildPhoneRow(
+            'Phone',
+            order.deliveryAddress.receiverPhone.isNotEmpty
+                ? order.deliveryAddress.receiverPhone
+                : order.customer.number),
+
+        // _buildSummaryRow(
+        //     'Email',
+        //     order.customer.email.isNotEmpty
+        //         ? order.customer.email
+        //         : 'Not provided'),
       ],
     );
   }
@@ -226,10 +243,11 @@ class OrderDetailsScreen extends StatelessWidget {
       title: 'Delivery Address',
       icon: Icons.location_on,
       children: [
-        _buildSummaryRow('Address', order.deliveryAddress.addressLine1),
-        _buildSummaryRow('City', order.deliveryAddress.city),
-        _buildSummaryRow('State', order.deliveryAddress.state),
-        _buildSummaryRow('Pincode', order.deliveryAddress.pincode),
+        _buildSummaryRow('Address',
+            '${order.deliveryAddress.addressLine1}, ${order.deliveryAddress.addressLine2}, '),
+        // _buildSummaryRow('City', order.deliveryAddress.city),
+        // _buildSummaryRow('State', order.deliveryAddress.state),
+        // _buildSummaryRow('Pincode', order.deliveryAddress.pincode),
         if (order.deliveryAddress.landmark.isNotEmpty)
           _buildSummaryRow('Landmark', order.deliveryAddress.landmark),
       ],
@@ -254,30 +272,20 @@ class OrderDetailsScreen extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.orange[50],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.orange[200]!),
-          ),
+          // decoration: BoxDecoration(
+          //   color: AppColors.backgroundlightColor,
+          //   borderRadius: BorderRadius.circular(8),
+          //   border: Border.all(color: AppColors.statusWaiting.withOpacity(0.3)),
+          // ),
           child: Text(
             order.specialInstructions,
-            style: TextStyle(
-              color: Colors.orange[800],
+            style: const TextStyle(
+              color: AppColors.black,
               fontWeight: FontWeight.w500,
               fontSize: 14,
             ),
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildTimelineCard() {
-    return _buildCard(
-      title: 'Order Timeline',
-      icon: Icons.timeline,
-      children: [
-        ...order.statusTimeline.map((s) => _buildTimelineTile(s)).toList(),
       ],
     );
   }
@@ -291,11 +299,11 @@ class OrderDetailsScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.primaryColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.secondaryColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -309,10 +317,10 @@ class OrderDetailsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: AppColors.midtoneColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: Colors.blue[600], size: 20),
+                child: Icon(icon, color: AppColors.secondaryColor, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -320,7 +328,7 @@ class OrderDetailsScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColors.secondaryColor,
                 ),
               ),
             ],
@@ -344,7 +352,7 @@ class OrderDetailsScreen extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.grey[600],
+                color: AppColors.textGray,
                 fontWeight: FontWeight.w500,
                 fontSize: isTotal ? 16 : 14,
               ),
@@ -359,9 +367,68 @@ class OrderDetailsScreen extends StatelessWidget {
                     ? FontWeight.bold
                     : FontWeight.w600,
                 fontSize: isTotal ? 18 : 14,
-                color: isTotal ? Colors.green[700] : Colors.black87,
+                color: isTotal
+                    ? AppColors.statusAccepted
+                    : AppColors.secondaryColor,
               ),
               textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhoneRow(String label, String phoneNumber) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textGray,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(
+                    phoneNumber,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: AppColors.secondaryColor,
+                    ),
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _makePhoneCall(phoneNumber),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.phone,
+                      size: 16,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -374,9 +441,9 @@ class OrderDetailsScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.backgrounddarklightColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.midtoneColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,20 +456,20 @@ class OrderDetailsScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.black87,
+                    color: AppColors.secondaryColor,
                   ),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.blue[100],
+                  color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   'Qty: ${item.quantity}',
-                  style: TextStyle(
-                    color: Colors.blue[700],
+                  style: const TextStyle(
+                    color: AppColors.secondaryColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
@@ -410,45 +477,45 @@ class OrderDetailsScreen extends StatelessWidget {
               ),
             ],
           ),
-          if (item.menuItem.description != null &&
-              item.menuItem.description!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                item.menuItem.description!,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
-              ),
-            ),
+          // if (item.menuItem.description != null &&
+          //     item.menuItem.description!.isNotEmpty)
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 4),
+          //     child: Text(
+          //       item.menuItem.description!,
+          //       style: TextStyle(
+          //         color: Colors.grey[600],
+          //         fontSize: 13,
+          //       ),
+          //     ),
+          //   ),
           if (item.variation != null && item.variation!.variationType != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.purple[50],
+                  color: AppColors.shadow.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.purple[200]!),
+                  border: Border.all(color: AppColors.shadow.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.tune, size: 16, color: Colors.purple[600]),
+                    const Icon(Icons.tune, size: 16, color: AppColors.shadow),
                     const SizedBox(width: 6),
                     Text(
                       item.variation!.variationType!.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: Colors.purple[700],
+                        color: AppColors.shadow,
                         fontSize: 13,
                       ),
                     ),
                     const Spacer(),
                     Text(
                       '₹${item.variation!.price.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: Colors.purple[700],
+                      style: const TextStyle(
+                        color: AppColors.shadow,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -462,8 +529,8 @@ class OrderDetailsScreen extends StatelessWidget {
             children: [
               Text(
                 'Unit Price: ₹${item.price.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: Colors.grey[600],
+                style: const TextStyle(
+                  color: AppColors.textGray,
                   fontSize: 13,
                 ),
               ),
@@ -473,7 +540,7 @@ class OrderDetailsScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
-                  color: Colors.black87,
+                  color: AppColors.secondaryColor,
                 ),
               ),
             ],
@@ -483,75 +550,17 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimelineTile(StatusTimeline s) {
-    Color dotColor;
-
-    switch (s.status.toUpperCase()) {
-      case 'PLACED':
-        dotColor = const Color(0xFFE65100);
-        break;
-      case 'CONFIRMED':
-        dotColor = const Color(0xFF1565C0);
-        break;
-      case 'COOKING':
-        dotColor = const Color(0xFF2E7D32);
-        break;
-      case 'DISPATCHED':
-        dotColor = const Color(0xFF7B1FA2);
-        break;
-      case 'DELIVERED':
-        dotColor = const Color(0xFF1E88E5);
-        break;
-      case 'CANCELLED':
-        dotColor = const Color(0xFFC62828);
-        break;
-      default:
-        dotColor = const Color(0xFF616161);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  s.status,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: dotColor,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${_formatDateTime(s.timestamp)} by ${s.updatedBy}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
     );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      // Handle error - could show a snackbar or dialog
+      debugPrint('Could not launch phone dialer');
+    }
   }
 
   void _showProofDialog(BuildContext context) {
@@ -567,11 +576,11 @@ class OrderDetailsScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: Row(
+              title: const Row(
                 children: [
-                  Icon(Icons.upload_file, color: Colors.blue[600]),
-                  const SizedBox(width: 8),
-                  const Text('Update Delivery Proof'),
+                  Icon(Icons.upload_file, color: AppColors.secondaryColor),
+                  SizedBox(width: 8),
+                  Text('Update Delivery Proof'),
                 ],
               ),
               content: Column(
@@ -589,10 +598,11 @@ class OrderDetailsScreen extends StatelessWidget {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.blue[600]!),
+                        borderSide:
+                            const BorderSide(color: AppColors.secondaryColor),
                       ),
                       filled: true,
-                      fillColor: Colors.grey[50],
+                      fillColor: AppColors.backgrounddarklightColor,
                     ),
                     minLines: 3,
                     maxLines: 5,
@@ -600,9 +610,16 @@ class OrderDetailsScreen extends StatelessWidget {
                 ],
               ),
               actions: [
-                TextButton(
+                ElevatedButton(
                   onPressed:
                       isLoading ? null : () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondaryColor,
+                    foregroundColor: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
@@ -640,7 +657,7 @@ class OrderDetailsScreen extends StatelessWidget {
                                 SnackBar(
                                   content:
                                       const Text('Proof updated successfully!'),
-                                  backgroundColor: Colors.green[600],
+                                  backgroundColor: AppColors.statusAccepted,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -657,7 +674,7 @@ class OrderDetailsScreen extends StatelessWidget {
                                 SnackBar(
                                   content: Text(response['error'] ??
                                       'Failed to update proof'),
-                                  backgroundColor: Colors.red[600],
+                                  backgroundColor: AppColors.statusRejected,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -668,8 +685,8 @@ class OrderDetailsScreen extends StatelessWidget {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[600],
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.secondaryColor,
+                    foregroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -679,7 +696,7 @@ class OrderDetailsScreen extends StatelessWidget {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
+                              strokeWidth: 2, color: AppColors.primaryColor))
                       : Text((order.deliveryProof == null ||
                               order.deliveryProof!.isEmpty)
                           ? 'Submit'

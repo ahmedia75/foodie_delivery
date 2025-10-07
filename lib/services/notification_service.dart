@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +18,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   // Notification channel for Android
-  static const String _defaultChannelId = 'default_channel';
+  static const String _defaultChannelId = 'mobile';
 
   // Stream controllers for notification events
   final StreamController<RemoteMessage> _onMessageStreamController =
@@ -98,7 +97,7 @@ class NotificationService {
 
   Future<void> _initializeLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_launcher');
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
@@ -175,7 +174,6 @@ class NotificationService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('fcm_token', token);
 
-        // TODO: Send token to your backend server
         await _sendTokenToServer(token);
       }
     } catch (e) {
@@ -190,14 +188,12 @@ class NotificationService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcm_token', token);
 
-      // TODO: Send updated token to your backend server
       await _sendTokenToServer(token);
     });
   }
 
   Future<void> _sendTokenToServer(String token) async {
     try {
-      // TODO: Implement API call to send token to your backend
       // Example:
       // await ApiService.updateFCMToken(token);
       debugPrint('Token sent to server: $token');
@@ -231,7 +227,7 @@ class NotificationService {
             channelId,
             'Notifications',
             channelDescription: 'Notification channel',
-            icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+            icon: android?.smallIcon ?? '@drawable/ic_launcher',
             color: const Color(0xFF2196F3),
             category: category,
             priority: Priority.high,
@@ -272,7 +268,6 @@ class NotificationService {
   }
 
   void _navigateToScreen(String screen, Map<String, dynamic> data) {
-    // TODO: Implement navigation based on screen parameter
     debugPrint('Navigate to screen: $screen with data: $data');
   }
 
@@ -293,7 +288,7 @@ class NotificationService {
           channelId,
           'Notifications',
           channelDescription: 'Notification channel',
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_launcher',
           color: const Color(0xFF2196F3),
           category: category,
           priority: Priority.high,
@@ -331,7 +326,7 @@ class NotificationService {
           channelId,
           'Notifications',
           channelDescription: 'Notification channel',
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_launcher',
           color: const Color(0xFF2196F3),
           priority: Priority.high,
           importance: Importance.high,

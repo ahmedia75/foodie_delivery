@@ -49,7 +49,8 @@ class DeliveryAgentOrder {
   final String status;
   final DeliveryAddress deliveryAddress;
   final double deliveryCharge;
-  final double gstCharge;
+  int? gstCharge;
+  int? discountAmount;
   final double totalAmount;
   final String paymentMethod;
   final List<StatusTimeline> statusTimeline;
@@ -68,7 +69,8 @@ class DeliveryAgentOrder {
     required this.status,
     required this.deliveryAddress,
     required this.deliveryCharge,
-    required this.gstCharge,
+    this.gstCharge,
+    this.discountAmount,
     required this.totalAmount,
     required this.paymentMethod,
     required this.statusTimeline,
@@ -92,7 +94,8 @@ class DeliveryAgentOrder {
       status: map['status'] ?? '',
       deliveryAddress: DeliveryAddress.fromMap(map['deliveryAddress'] ?? {}),
       deliveryCharge: (map['deliveryCharge'] ?? 0).toDouble(),
-      gstCharge: (map['gstCharge'] ?? 0).toDouble(),
+      gstCharge: (map['gstCharge'] ?? 0).toInt(),
+      discountAmount: (map['discountAmount'] ?? 0).toInt(),
       totalAmount: (map['totalAmount'] ?? 0).toDouble(),
       paymentMethod: map['paymentMethod'] ?? '',
       statusTimeline: map['statusTimeline'] != null
@@ -232,6 +235,7 @@ class DeliveryAddress {
   final String pincode;
   final String landmark;
   final String customerName;
+  final String receiverPhone;
   DeliveryAddress({
     required this.addressLine1,
     required this.addressLine2,
@@ -240,6 +244,7 @@ class DeliveryAddress {
     required this.pincode,
     required this.landmark,
     required this.customerName,
+    required this.receiverPhone,
   });
   factory DeliveryAddress.fromMap(Map<String, dynamic> map) {
     return DeliveryAddress(
@@ -250,6 +255,7 @@ class DeliveryAddress {
       pincode: map['pincode'] ?? '',
       landmark: map['landmark'] ?? '',
       customerName: map['customerName'] ?? '',
+      receiverPhone: map['receiverPhone'] ?? '',
     );
   }
 }

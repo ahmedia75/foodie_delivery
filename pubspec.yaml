@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -53,6 +53,8 @@ dependencies:
   upgrader: ^11.4.0
   connectivity_plus: ^6.1.4
   timezone: ^0.10.1
+  url_launcher: ^6.3.1
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
@@ -82,11 +84,28 @@ flutter:
     - assets/json/
     - assets/images/
   fonts:
-    - family: PTSans
+    - family: MuseoSans
       fonts:
-        - asset: assets/fonts/PTSans-Regular.ttf
-        - asset: assets/fonts/PTSans-Bold.ttf
+        - asset: assets/fonts/fonnts.com-Museo_Sans_300.otf
+          weight: 300
+        - asset: assets/fonts/fonnts.com-Museo_Sans_500.otf
+          weight: 500
+        - asset: assets/fonts/fonnts.com-Museo_Sans_700.otf
           weight: 700
+        - asset: assets/fonts/fonnts.com-Museo_Sans_900.otf
+          weight: 900
+        - asset: assets/fonts/fonnts.com-Museo_Sans_300_Italic.otf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/fonnts.com-Museo_Sans_500_Italic.otf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/fonnts.com-Museo_Sans_700_Italic.otf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/fonnts.com-Museo_Sans_900_Italic.otf
+          weight: 900
+          style: italic
 
   # To add assets to your application, add an assets section, like this:
   # assets:

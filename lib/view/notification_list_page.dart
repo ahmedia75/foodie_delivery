@@ -11,18 +11,20 @@ class NotificationListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.backgrounddarklightColor,
       appBar: AppBar(
         title: const Text(
           'Notifications',
           style: TextStyle(
-            color: AppColors.primary,
+            color: AppColors.secondaryColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.secondary,
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.secondaryColor,
         elevation: 3,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.primary),
+        iconTheme: const IconThemeData(color: AppColors.secondaryColor),
         actions: [
           // Test button for debugging
           // IconButton(
@@ -52,7 +54,7 @@ class NotificationListPage extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('All notifications marked as read'),
-                          backgroundColor: Colors.green,
+                          backgroundColor: AppColors.statusAccepted,
                         ),
                       );
                       break;
@@ -68,13 +70,13 @@ class NotificationListPage extends StatelessWidget {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.12),
+                            color: AppColors.secondaryColor.withOpacity(0.12),
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(6),
                           child: const Icon(
                             Icons.mark_email_read,
-                            color: AppColors.primaryColor,
+                            color: AppColors.secondaryColor,
                             size: 22,
                           ),
                         ),
@@ -105,13 +107,13 @@ class NotificationListPage extends StatelessWidget {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.15),
+                            color: AppColors.statusRejected.withOpacity(0.15),
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(6),
                           child: const Icon(
                             Icons.delete_forever,
-                            color: Colors.redAccent,
+                            color: AppColors.statusRejected,
                             size: 22,
                           ),
                         ),
@@ -123,7 +125,7 @@ class NotificationListPage extends StatelessWidget {
                               'Clear all',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: Colors.redAccent,
+                                color: AppColors.statusRejected,
                               ),
                             ),
                             // Optional subtitle for clarity
@@ -142,13 +144,13 @@ class NotificationListPage extends StatelessWidget {
                 ],
                 icon: const Icon(
                   Icons.more_vert,
-                  color: AppColors.primaryColor,
+                  color: AppColors.secondaryColor,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 // Optional: change color of menu background for better contrast
-                color: Colors.white,
+                color: AppColors.primaryColor,
                 elevation: 6,
               );
             },
@@ -175,17 +177,17 @@ class NotificationListPage extends StatelessWidget {
                   Icon(
                     Icons.notifications_none,
                     size: 64,
-                    color: Colors.grey,
+                    color: AppColors.textGray,
                   ),
                   SizedBox(height: 16),
                   Text(
                     'No notifications yet',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: TextStyle(fontSize: 18, color: AppColors.textGray),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'You\'ll see your notifications here',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: AppColors.textGray),
                   ),
                   // const SizedBox(height: 16),
                   // // Debug info
@@ -259,15 +261,24 @@ class NotificationListPage extends StatelessWidget {
 
     // Simple notification icon
     const IconData icon = Icons.notifications;
-    const Color iconColor = AppColors.primaryColor;
+    const Color iconColor = AppColors.secondaryColor;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: isRead ? 1 : 3,
-      color: isRead
-          ? AppColors.iconGray
-          : AppColors.backgroundlightColor, // <--- Here!
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isRead ? AppColors.midtoneColor : AppColors.primaryColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: ListTile(
+        contentPadding: EdgeInsets.zero,
         leading: CircleAvatar(
           backgroundColor: iconColor.withOpacity(0.1),
           child: const Icon(icon, color: AppColors.textGray, size: 24),
@@ -275,7 +286,8 @@ class NotificationListPage extends StatelessWidget {
         title: Text(
           title,
           style: TextStyle(
-            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+            // fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+            fontWeight: FontWeight.bold,
             color: isRead ? AppColors.textGray : AppColors.black,
           ),
         ),
@@ -288,7 +300,7 @@ class NotificationListPage extends StatelessWidget {
             //     color: isRead ? AppColors.primaryColor : AppColors.primaryColor,
             //   ),
             // ),
-            ExpandableText(text: body),
+            ExpandableText(text: body, isRead: isRead),
             const SizedBox(height: 4),
             Text(
               _formatTimestamp(message.sentTime?.millisecondsSinceEpoch),
@@ -307,7 +319,7 @@ class NotificationListPage extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Marked as read'),
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppColors.statusAccepted,
                     ),
                   );
                 }
@@ -317,7 +329,7 @@ class NotificationListPage extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Notification deleted'),
-                    backgroundColor: Colors.orange,
+                    backgroundColor: AppColors.statusWaiting,
                   ),
                 );
                 break;
@@ -331,13 +343,13 @@ class NotificationListPage extends StatelessWidget {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withOpacity(0.12),
+                        color: AppColors.secondaryColor.withOpacity(0.12),
                         shape: BoxShape.circle,
                       ),
                       padding: const EdgeInsets.all(6),
                       child: const Icon(
                         Icons.mark_email_read,
-                        color: AppColors.primaryColor,
+                        color: AppColors.secondaryColor,
                         size: 22,
                       ),
                     ),
@@ -386,6 +398,10 @@ class NotificationListPage extends StatelessWidget {
           elevation: 6,
         ),
         onTap: () {
+          // Mark as read if not already read
+          if (!isRead) {
+            notificationProvider.markMessageAsRead(message.messageId ?? '');
+          }
           // Handle notification tap
           _handleNotificationTap(context, message);
         },
@@ -447,11 +463,12 @@ class NotificationListPage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('All notifications cleared'),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: AppColors.statusWaiting,
                 ),
               );
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style:
+                TextButton.styleFrom(foregroundColor: AppColors.statusRejected),
             child: const Text('Clear All'),
           ),
         ],
